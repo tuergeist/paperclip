@@ -44,6 +44,10 @@ jobs:
             type=semver,pattern={{major}}.{{minor}}
             type=sha
 
+      - name: Set image tag
+        id: image_tag
+        run: echo "value=sha-${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
       - name: Build and push
         uses: docker/build-push-action@v7
         with:
@@ -54,3 +58,16 @@ jobs:
           cache-to: type=gha,mode=max
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Deploy to Kubernetes
+        if: github.ref == 'refs/heads/master'
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.K8S_INFRA_PAT }}
+          repository: expert-sieve/k8s-infra
+          event-type: deploy
+          client-payload: |
+            {
+              "app": "paperclip",
+              "image_tag": "${{ steps.image_tag.outputs.value }}"
+            }
