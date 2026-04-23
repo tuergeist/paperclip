@@ -2,18 +2,21 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { PaperclipApiClient } from "./client.js";
 import { createToolDefinitions } from "./tools.js";
 
-function makeClient() {
+function makeClient(overrides: { taskId?: string | null } = {}) {
   return new PaperclipApiClient({
     apiUrl: "http://localhost:3100/api",
     apiKey: "token-123",
     companyId: "11111111-1111-1111-1111-111111111111",
     agentId: "22222222-2222-2222-2222-222222222222",
     runId: "33333333-3333-3333-3333-333333333333",
+    taskId: overrides.taskId ?? null,
   });
 }
 
-function getTool(name: string) {
-  const tool = createToolDefinitions(makeClient()).find((candidate) => candidate.name === name);
+function getTool(name: string, clientOverrides: { taskId?: string | null } = {}) {
+  const tool = createToolDefinitions(makeClient(clientOverrides)).find(
+    (candidate) => candidate.name === name,
+  );
   if (!tool) throw new Error(`Missing tool ${name}`);
   return tool;
 }
@@ -50,6 +53,46 @@ describe("paperclip MCP tools", () => {
     expect((init.headers as Record<string, string>)["X-Paperclip-Run-Id"]).toBe(
       "33333333-3333-3333-3333-333333333333",
     );
+  });
+
+  it("falls back to PAPERCLIP_TASK_ID when paperclipUpdateIssue omits issueId", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipUpdateIssue", { taskId: "ING-146" });
+    await tool.execute({ status: "in_progress", comment: "heartbeat-end" });
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(String(url)).toBe("http://localhost:3100/api/issues/ING-146");
+    expect(init.method).toBe("PATCH");
+    expect(JSON.parse(String(init.body))).toEqual({
+      status: "in_progress",
+      comment: "heartbeat-end",
+    });
+  });
+
+  it("falls back to PAPERCLIP_TASK_ID when paperclipAddComment omits issueId", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "comment-1" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipAddComment", { taskId: "ING-146" });
+    await tool.execute({ body: "heartbeat-end" });
+
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(String(url)).toBe("http://localhost:3100/api/issues/ING-146/comments");
+    expect(init.method).toBe("POST");
+    expect(JSON.parse(String(init.body))).toEqual({ body: "heartbeat-end" });
+  });
+
+  it("returns a clear error when issueId and PAPERCLIP_TASK_ID are both missing", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipAddComment");
+    const response = await tool.execute({ body: "heartbeat-end" });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(response.content[0]?.text).toContain("PAPERCLIP_TASK_ID is not set");
   });
 
   it("uses default company id for company-scoped list tools", async () => {

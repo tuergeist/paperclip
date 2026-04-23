@@ -56,6 +56,7 @@ export class PaperclipApiClient {
       companyId: this.config.companyId,
       agentId: this.config.agentId,
       runId: this.config.runId,
+      taskId: this.config.taskId,
     };
   }
 
@@ -71,6 +72,14 @@ export class PaperclipApiClient {
     const resolved = agentId?.trim() || this.config.agentId;
     if (!resolved) {
       throw new Error("agentId is required because PAPERCLIP_AGENT_ID is not set");
+    }
+    return resolved;
+  }
+
+  resolveIssueId(issueId?: string | null): string {
+    const resolved = issueId?.trim() || this.config.taskId;
+    if (!resolved) {
+      throw new Error("issueId is required because PAPERCLIP_TASK_ID is not set");
     }
     return resolved;
   }

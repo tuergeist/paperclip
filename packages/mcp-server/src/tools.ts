@@ -98,7 +98,7 @@ const createIssueToolSchema = z.object({
 }).merge(createIssueSchema);
 
 const updateIssueToolSchema = z.object({
-  issueId: issueIdSchema,
+  issueId: issueIdSchema.optional(),
 }).merge(updateIssueSchema);
 
 const checkoutIssueToolSchema = z.object({
@@ -108,7 +108,7 @@ const checkoutIssueToolSchema = z.object({
 });
 
 const addCommentToolSchema = z.object({
-  issueId: issueIdSchema,
+  issueId: issueIdSchema.optional(),
 }).merge(addIssueCommentSchema);
 
 const createSuggestTasksToolSchema = z.object({
@@ -450,10 +450,12 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
     ),
     makeTool(
       "paperclipUpdateIssue",
-      "Patch an issue, optionally including a comment",
+      "Patch an issue, optionally including a comment. If issueId is omitted, falls back to PAPERCLIP_TASK_ID.",
       updateIssueToolSchema,
-      async ({ issueId, ...body }) =>
-        client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, { body }),
+      async ({ issueId, ...body }) => {
+        const resolvedIssueId = client.resolveIssueId(issueId);
+        return client.requestJson("PATCH", `/issues/${encodeURIComponent(resolvedIssueId)}`, { body });
+      },
     ),
     makeTool(
       "paperclipCheckoutIssue",
@@ -475,10 +477,12 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
     ),
     makeTool(
       "paperclipAddComment",
-      "Add a comment to an issue",
+      "Add a comment to an issue. If issueId is omitted, falls back to PAPERCLIP_TASK_ID.",
       addCommentToolSchema,
-      async ({ issueId, ...body }) =>
-        client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/comments`, { body }),
+      async ({ issueId, ...body }) => {
+        const resolvedIssueId = client.resolveIssueId(issueId);
+        return client.requestJson("POST", `/issues/${encodeURIComponent(resolvedIssueId)}/comments`, { body });
+      },
     ),
     makeTool(
       "paperclipSuggestTasks",

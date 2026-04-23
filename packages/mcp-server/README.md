@@ -14,6 +14,10 @@ The server reads its configuration from environment variables:
 - `PAPERCLIP_COMPANY_ID` - optional default company for company-scoped tools
 - `PAPERCLIP_AGENT_ID` - optional default agent for checkout helpers
 - `PAPERCLIP_RUN_ID` - optional run id forwarded on mutating requests
+- `PAPERCLIP_TASK_ID` - optional issue id used as a fallback for `paperclipUpdateIssue`
+  and `paperclipAddComment` when the caller omits `issueId`. Lets per-heartbeat
+  callers (e.g. Claude Code Stop hooks) operate on the current issue without
+  baking the id into static config.
 
 ## Usage
 
