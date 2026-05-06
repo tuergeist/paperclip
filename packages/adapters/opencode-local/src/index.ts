@@ -1,7 +1,7 @@
 import type { AdapterModelProfileDefinition } from "@paperclipai/adapter-utils";
 
-export const type = "opencode_local";
-export const label = "OpenCode (local)";
+export const type = "opencode_external";
+export const label = "OpenCode External (PAPERCLIP_HOME)";
 
 export const SANDBOX_INSTALL_COMMAND = "npm install -g opencode-ai";
 
@@ -35,19 +35,19 @@ export const modelProfiles: AdapterModelProfileDefinition[] = [
   },
 ];
 
-export const agentConfigurationDoc = `# opencode_local agent configuration
+export const agentConfigurationDoc = `# opencode_external agent configuration
 
-Adapter: opencode_local
+Adapter: opencode_external
 
 Use when:
-- You want Paperclip to run OpenCode locally as the agent runtime
+- You want Paperclip to run OpenCode remotely/externally via PAPERCLIP_HOME
 - You want provider/model routing in OpenCode format (provider/model)
 - You want OpenCode session resume across heartbeats via --session
 
 Don't use when:
 - You need webhook-style external invocation (use openclaw_gateway or http)
 - You only need one-shot shell commands (use process)
-- OpenCode CLI is not installed on the machine
+- OpenCode CLI is not installed on the target machine
 
 Core fields:
 - cwd (string, optional): default absolute working directory fallback for the agent process (created if missing when possible)
@@ -67,7 +67,7 @@ Operational fields:
 Notes:
 - OpenCode supports multiple providers and models. Use \
   \`opencode models\` to list available options in provider/model format.
-- Paperclip requires an explicit \`model\` value for \`opencode_local\` agents.
+- Paperclip requires an explicit \`model\` value for \`opencode_external\` agents.
 - Runs are executed with: opencode run --format json ...
 - Sessions are resumed with --session when stored session cwd matches current cwd.
 - The adapter sets OPENCODE_DISABLE_PROJECT_CONFIG=true to prevent OpenCode from \
@@ -76,4 +76,6 @@ Notes:
 - When \`dangerouslySkipPermissions\` is enabled, Paperclip injects a temporary \
   runtime config with \`permission.external_directory=allow\` so headless runs do \
   not stall on approval prompts.
+- Set PAPERCLIP_HOME or PAPERCLIP_OPENCODE_HOME in env to override the home \
+  directory for OpenCode config discovery.
 `;

@@ -1,4 +1,7 @@
 import type { AdapterSessionCodec } from "@paperclipai/adapter-utils";
+import { execute } from "./execute.js";
+import { listOpenCodeModels } from "./models.js";
+import { testEnvironment } from "./test.js";
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
@@ -60,9 +63,9 @@ export const sessionCodec: AdapterSessionCodec = {
   },
 };
 
-export { execute } from "./execute.js";
+export { execute };
 export { listOpenCodeSkills, syncOpenCodeSkills } from "./skills.js";
-export { testEnvironment } from "./test.js";
+export { testEnvironment };
 export {
   listOpenCodeModels,
   discoverOpenCodeModels,
@@ -71,3 +74,14 @@ export {
   resetOpenCodeModelsCacheForTests,
 } from "./models.js";
 export { parseOpenCodeJsonl, isOpenCodeUnknownSessionError } from "./parse.js";
+
+export function createServerAdapter() {
+  return {
+    type: "opencode_external",
+    label: "OpenCode External (PAPERCLIP_HOME)",
+    execute,
+    listModels: listOpenCodeModels,
+    testEnvironment,
+    sessionCodec,
+  };
+}
