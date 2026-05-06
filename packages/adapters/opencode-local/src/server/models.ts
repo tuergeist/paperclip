@@ -191,6 +191,12 @@ export async function ensureOpenCodeModelConfiguredAndAvailable(input: {
 }): Promise<AdapterModel[]> {
   const model = requireOpenCodeModelId(input.model);
 
+  // opencode/ provider models are OpenCode Zen built-in models — always
+  // available, no discovery or auth needed. Skip `opencode models` entirely.
+  if (model.startsWith("opencode/")) {
+    return [{ id: model, label: model }];
+  }
+
   const models = await discoverOpenCodeModelsCached({
     command: input.command,
     cwd: input.cwd,

@@ -173,11 +173,16 @@ export async function testEnvironment(
     // wired through the execution target. When probing a remote env, skip
     // discovery/validation and rely on the remote hello probe to surface
     // model/auth issues directly.
-    if (targetIsRemote && configuredModel) {
+    // opencode/ provider models are OpenCode Zen built-in models — always
+    // available, so skip `opencode models` discovery entirely.
+    const isZenModel = configuredModel.startsWith("opencode/");
+    if ((targetIsRemote || isZenModel) && configuredModel) {
       checks.push({
-        code: "opencode_model_validation_skipped_remote",
+        code: isZenModel ? "opencode_zen_model_no_discovery_needed" : "opencode_model_validation_skipped_remote",
         level: "info",
-        message: `Skipped local model validation; will be validated by the hello probe inside ${targetLabel}.`,
+        message: isZenModel
+          ? `OpenCode Zen model "${configuredModel}" is always available — skipped model discovery.`
+          : `Skipped local model validation; will be validated by the hello probe inside ${targetLabel}.`,
       });
       modelValidationPassed = true;
     } else if (canRunProbe && configuredModel) {
