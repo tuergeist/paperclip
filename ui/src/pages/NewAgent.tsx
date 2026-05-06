@@ -49,7 +49,7 @@ function createValuesForAdapterType(
     nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
   } else if (adapterType === "cursor") {
     nextValues.model = DEFAULT_CURSOR_LOCAL_MODEL;
-  } else if (adapterType === "opencode_local") {
+  } else if (adapterType === "opencode_external") {
     nextValues.model = DEFAULT_OPENCODE_LOCAL_MODEL;
   }
   return nextValues;
@@ -141,7 +141,7 @@ export function NewAgent() {
   function handleSubmit() {
     if (!selectedCompanyId || !name.trim()) return;
     setFormError(null);
-    if (configValues.adapterType === "opencode_local") {
+    if (configValues.adapterType === "opencode_external") {
       if (!isValidOpenCodeModelId(configValues.model)) {
         setFormError("OpenCode requires an explicit model in provider/model format.");
         return;

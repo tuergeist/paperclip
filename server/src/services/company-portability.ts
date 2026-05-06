@@ -603,7 +603,7 @@ const ADAPTER_DEFAULT_RULES_BY_TYPE: Record<string, Array<{ path: string[]; valu
     { path: ["timeoutSec"], value: 0 },
     { path: ["graceSec"], value: 15 },
   ],
-  opencode_local: [
+  opencode_external: [
     { path: ["timeoutSec"], value: 0 },
     { path: ["graceSec"], value: 15 },
   ],
@@ -2784,12 +2784,12 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
     adapterType: string,
     adapterConfig: Record<string, unknown>,
   ) {
-    if (adapterType !== "opencode_local") return;
+    if (adapterType !== "opencode_external") return;
     try {
       requireOpenCodeModelId(adapterConfig.model);
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
-      throw unprocessable(`Invalid opencode_local adapterConfig: ${reason}`);
+      throw unprocessable(`Invalid opencode_external adapterConfig: ${reason}`);
     }
   }
 

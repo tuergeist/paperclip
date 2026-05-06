@@ -427,7 +427,7 @@ const HERMES_AGENT: Agent = {
   status: "idle",
   reportsTo: "agent-cto",
   capabilities: "Hermes-backed assistant on an adapter without the cheap-profile contract.",
-  adapterType: "opencode_local",
+  adapterType: "opencode_external",
   adapterConfig: {},
   runtimeConfig: {},
   budgetMonthlyCents: 60_000,
@@ -735,7 +735,7 @@ function useCheapLaneAdapterOverrides(variant: CheapLaneVariant) {
         },
       },
       {
-        type: "opencode_local",
+        type: "opencode_external",
         label: "OpenCode local",
         source: "builtin",
         modelsCount: 2,
@@ -750,7 +750,7 @@ function useCheapLaneAdapterOverrides(variant: CheapLaneVariant) {
         },
       },
     ]);
-    queryClient.setQueryData(queryKeys.agents.adapterModels(COMPANY_ID, "opencode_local"), [
+    queryClient.setQueryData(queryKeys.agents.adapterModels(COMPANY_ID, "opencode_external"), [
       { id: "anthropic/claude-haiku-4-5", label: "Claude Haiku 4.5" },
       { id: "openai/gpt-5.4-mini", label: "GPT-5.4 Mini" },
     ]);
@@ -932,7 +932,7 @@ export const NewIssueCheapLaneUnsupported: Story = {
     <DialogStory
       eyebrow="NewIssueDialog"
       title="Model lane on an adapter without supportsModelProfiles"
-      description="HermesRouter runs on opencode_local with supportsModelProfiles disabled, so the Cheap option should be hidden — the segmented control collapses to Primary | Custom rather than showing a greyed Cheap entry."
+      description="HermesRouter runs on opencode_external with supportsModelProfiles disabled, so the Cheap option should be hidden — the segmented control collapses to Primary | Custom rather than showing a greyed Cheap entry."
       badges={["model lane", "unsupported", "cheap hidden"]}
     >
       <CheapLaneIssueDialogOpener variant="unsupported" />

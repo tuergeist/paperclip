@@ -26,7 +26,7 @@ const codexLocalCLIAdapter: CLIAdapterModule = {
 };
 
 const openCodeLocalCLIAdapter: CLIAdapterModule = {
-  type: "opencode_local",
+  type: "opencode_external",
   formatStdoutEvent: printOpenCodeStreamEvent,
 };
 

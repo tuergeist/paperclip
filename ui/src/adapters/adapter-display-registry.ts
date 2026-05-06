@@ -78,7 +78,7 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     description: "Local Gemini agent",
     icon: Gem,
   },
-  opencode_local: {
+  opencode_external: {
     label: "OpenCode",
     description: "Local multi-provider agent",
     icon: OpenCodeLogoIcon,

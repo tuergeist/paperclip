@@ -266,7 +266,7 @@ export async function testEnvironment(
     // to /usr/bin/node (Node 18) instead of nvm's Node 22, causing pi-tui to
     // crash with `Invalid regular expression flags` on its /v unicode regex.
     // Match the pattern used by claude_local / codex_local / gemini_local /
-    // opencode_local probes: send only the user-configured adapter env across
+    // opencode_external probes: send only the user-configured adapter env across
     // SSH. Local probes still get the full runtimeEnv.
     const probeEnv = targetIsRemote ? normalizeEnv(env) : runtimeEnv;
 

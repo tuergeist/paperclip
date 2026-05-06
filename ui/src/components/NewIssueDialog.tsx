@@ -119,7 +119,7 @@ const ISSUE_THINKING_EFFORT_OPTIONS = {
     { value: "high", label: "High" },
     { value: "xhigh", label: "X-High" },
   ],
-  opencode_local: [
+  opencode_external: [
     { value: "", label: "Default" },
     { value: "minimal", label: "Minimal" },
     { value: "low", label: "Low" },
@@ -790,8 +790,8 @@ export function NewIssueDialog() {
     const validThinkingValues =
       assigneeAdapterType === "codex_local"
         ? ISSUE_THINKING_EFFORT_OPTIONS.codex_local
-        : assigneeAdapterType === "opencode_local"
-          ? ISSUE_THINKING_EFFORT_OPTIONS.opencode_local
+        : assigneeAdapterType === "opencode_external"
+          ? ISSUE_THINKING_EFFORT_OPTIONS.opencode_external
           : ISSUE_THINKING_EFFORT_OPTIONS.claude_local;
     if (!validThinkingValues.some((option) => option.value === assigneeThinkingEffort)) {
       setAssigneeThinkingEffort("");
@@ -1021,14 +1021,14 @@ export function NewIssueDialog() {
       ? "Claude options"
       : assigneeAdapterType === "codex_local"
         ? "Codex options"
-        : assigneeAdapterType === "opencode_local"
+        : assigneeAdapterType === "opencode_external"
           ? "OpenCode options"
         : "Agent options";
   const thinkingEffortOptions =
     assigneeAdapterType === "codex_local"
       ? ISSUE_THINKING_EFFORT_OPTIONS.codex_local
-      : assigneeAdapterType === "opencode_local"
-        ? ISSUE_THINKING_EFFORT_OPTIONS.opencode_local
+      : assigneeAdapterType === "opencode_external"
+        ? ISSUE_THINKING_EFFORT_OPTIONS.opencode_external
       : ISSUE_THINKING_EFFORT_OPTIONS.claude_local;
   const recentAssigneeIds = useMemo(() => getRecentAssigneeIds(), [newIssueOpen]);
   const recentAssigneeOptionIds = useMemo(

@@ -4,7 +4,7 @@ import { OpenCodeLocalConfigFields } from "./config-fields";
 import { buildOpenCodeLocalConfig } from "@paperclipai/adapter-opencode-local/ui";
 
 export const openCodeLocalUIAdapter: UIAdapterModule = {
-  type: "opencode_local",
+  type: "opencode_external",
   label: "OpenCode (local)",
   parseStdoutLine: parseOpenCodeStdoutLine,
   ConfigFields: OpenCodeLocalConfigFields,

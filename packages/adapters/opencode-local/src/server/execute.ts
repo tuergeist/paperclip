@@ -535,7 +535,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       const args = buildArgs(resumeSessionId);
       if (onMeta) {
         await onMeta({
-          adapterType: "opencode_local",
+          adapterType: "opencode_external",
           command: resolvedCommand,
           cwd: effectiveExecutionCwd,
           commandNotes,

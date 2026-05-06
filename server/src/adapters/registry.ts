@@ -290,7 +290,7 @@ const openclawGatewayAdapter: ServerAdapterModule = {
 };
 
 const openCodeLocalAdapter: ServerAdapterModule = {
-  type: "opencode_local",
+  type: "opencode_external",
   execute: openCodeExecute,
   testEnvironment: openCodeTestEnvironment,
   listSkills: listOpenCodeSkills,
@@ -298,7 +298,7 @@ const openCodeLocalAdapter: ServerAdapterModule = {
   sessionCodec: openCodeSessionCodec,
   models: openCodeModels,
   modelProfiles: openCodeModelProfiles,
-  sessionManagement: getAdapterSessionManagement("opencode_local") ?? undefined,
+  sessionManagement: getAdapterSessionManagement("opencode_external") ?? undefined,
   listModels: listOpenCodeModels,
   supportsLocalAgentJwt: true,
   supportsInstructionsBundle: true,

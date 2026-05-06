@@ -128,7 +128,7 @@ export function agentRoutes(
     droid_local: "instructionsFilePath",
     gemini_local: "instructionsFilePath",
     hermes_local: "instructionsFilePath",
-    opencode_local: "instructionsFilePath",
+    opencode_external: "instructionsFilePath",
     cursor: "instructionsFilePath",
     pi_local: "instructionsFilePath",
   };
@@ -1032,7 +1032,7 @@ export function agentRoutes(
       next.model = DEFAULT_GEMINI_LOCAL_MODEL;
       return ensureGatewayDeviceKey(adapterType, next);
     }
-    if (adapterType === "opencode_local" && !asNonEmptyString(next.model)) {
+    if (adapterType === "opencode_external" && !asNonEmptyString(next.model)) {
       next.model = DEFAULT_OPENCODE_LOCAL_MODEL;
       return ensureGatewayDeviceKey(adapterType, next);
     }
@@ -1046,12 +1046,12 @@ export function agentRoutes(
     adapterType: string | null | undefined,
     adapterConfig: Record<string, unknown>,
   ) {
-    if (adapterType !== "opencode_local") return;
+    if (adapterType !== "opencode_external") return;
     try {
       requireOpenCodeModelId(adapterConfig.model);
     } catch (err) {
       const reason = err instanceof Error ? err.message : String(err);
-      throw unprocessable(`Invalid opencode_local adapterConfig: ${reason}`);
+      throw unprocessable(`Invalid opencode_external adapterConfig: ${reason}`);
     }
   }
 
@@ -1210,7 +1210,7 @@ export function agentRoutes(
   const LEGACY_MATERIALIZED_SKILLS_SET = new Set([
     "cursor",
     "gemini_local",
-    "opencode_local",
+    "opencode_external",
     "pi_local",
   ]);
 
@@ -1363,7 +1363,7 @@ export function agentRoutes(
       res.status(404).json({ error: "Environment not found" });
       return;
     }
-    if (type === "opencode_local" && environment && environment.driver !== "local") {
+    if (type === "opencode_external" && environment && environment.driver !== "local") {
       const adapter = requireServerAdapter(type);
       res.json(adapter.models ?? []);
       return;

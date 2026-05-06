@@ -36,7 +36,7 @@ async function buildOpenCodeSkillSnapshot(config: Record<string, unknown>): Prom
   const skillsHome = resolveOpenCodeSkillsHome(config);
   const installed = await readInstalledSkillTargets(skillsHome);
   return buildPersistentSkillSnapshot({
-    adapterType: "opencode_local",
+    adapterType: "opencode_external",
     availableEntries,
     desiredSkills,
     installed,

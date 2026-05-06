@@ -34,7 +34,7 @@ export const AGENT_ADAPTER_TYPES = [
   "claude_local",
   "codex_local",
   "gemini_local",
-  "opencode_local",
+  "opencode_external",
   "pi_local",
   "cursor",
   "openclaw_gateway",

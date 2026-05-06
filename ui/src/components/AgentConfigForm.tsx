@@ -376,7 +376,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       }
       return agentsApi.detectModel(selectedCompanyId, adapterType);
     },
-    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "opencode_local"),
+    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "opencode_external"),
   });
   const detectedModel = detectedModelData?.model ?? null;
   const detectedModelCandidates = detectedModelData?.candidates ?? [];
@@ -529,7 +529,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ? "modelReasoningEffort"
       : adapterType === "cursor"
         ? "mode"
-        : adapterType === "opencode_local"
+        : adapterType === "opencode_external"
           ? "variant"
           : "effort";
   const thinkingEffortOptions =
@@ -537,7 +537,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ? codexThinkingEffortOptions
       : adapterType === "cursor"
         ? cursorModeOptions
-        : adapterType === "opencode_local"
+        : adapterType === "opencode_external"
           ? openCodeThinkingEffortOptions
           : claudeThinkingEffortOptions;
   const currentThinkingEffort = isCreate
@@ -550,7 +550,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         )
       : adapterType === "cursor"
         ? eff("adapterConfig", "mode", String(config.mode ?? ""))
-      : adapterType === "opencode_local"
+      : adapterType === "opencode_external"
         ? eff("adapterConfig", "variant", String(config.variant ?? ""))
       : eff("adapterConfig", "effort", String(config.effort ?? ""));
   const showThinkingEffort = adapterType !== "gemini_local";
@@ -832,7 +832,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
                     } else if (t === "cursor") {
                       nextValues.model = DEFAULT_CURSOR_LOCAL_MODEL;
-                    } else if (t === "opencode_local") {
+                    } else if (t === "opencode_external") {
                       nextValues.model = DEFAULT_OPENCODE_LOCAL_MODEL;
                     }
                     set!(nextValues);
@@ -849,7 +849,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                             ? DEFAULT_CODEX_LOCAL_MODEL
                             : t === "gemini_local"
                               ? DEFAULT_GEMINI_LOCAL_MODEL
-                            : t === "opencode_local"
+                            : t === "opencode_external"
                               ? DEFAULT_OPENCODE_LOCAL_MODEL
                             : t === "cursor"
                               ? DEFAULT_CURSOR_LOCAL_MODEL
@@ -951,7 +951,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       gemini_local: "gemini",
                       pi_local: "pi",
                       cursor: "agent",
-                      opencode_local: "opencode",
+                      opencode_external: "opencode",
                     } as Record<string, string>)[adapterType] ?? adapterType.replace(/_local$/, "")
                   }
                 />
@@ -970,13 +970,13 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 }
                 open={modelOpen}
                 onOpenChange={setModelOpen}
-                allowDefault={adapterType !== "opencode_local"}
-                required={adapterType === "opencode_local"}
-                groupByProvider={adapterType === "opencode_local"}
+                allowDefault={adapterType !== "opencode_external"}
+                required={adapterType === "opencode_external"}
+                groupByProvider={adapterType === "opencode_external"}
                 creatable
                 detectedModel={detectedModel}
                 detectedModelCandidates={[]}
-                onDetectModel={adapterType === "opencode_local"
+                onDetectModel={adapterType === "opencode_external"
                   ? undefined
                   : async () => {
                       const result = await refetchDetectedModel();
@@ -995,7 +995,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       : "Failed to load adapter models.")}
                 </p>
               )}
-              {adapterType === "opencode_local"
+              {adapterType === "opencode_external"
                 && currentDefaultEnvironment
                 && currentDefaultEnvironment.driver !== "local" && (
                 <p className="text-xs text-muted-foreground">
@@ -1331,7 +1331,7 @@ function AdapterTypeDropdown({
       <PopoverTrigger asChild>
         <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
           <span className="inline-flex min-w-0 items-center gap-1.5">
-            {value === "opencode_local" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
+            {value === "opencode_external" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
             <span className="truncate">{adapterLabels[value] ?? getAdapterLabel(value)}</span>
             {selectedDisplay.experimental && <ExperimentalBadge />}
           </span>
@@ -1358,7 +1358,7 @@ function AdapterTypeDropdown({
             }}
           >
             <span className="inline-flex items-center gap-1.5">
-              {item.value === "opencode_local" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
+              {item.value === "opencode_external" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
               <span>{item.label}</span>
               {item.experimental && <ExperimentalBadge />}
             </span>
@@ -1743,7 +1743,7 @@ function CheapModelSection({
           onOpenChange={onOpenChange}
           allowDefault
           required={false}
-          groupByProvider={adapterType === "opencode_local"}
+          groupByProvider={adapterType === "opencode_external"}
           creatable
           detectedModel={null}
           detectedModelCandidates={[]}
