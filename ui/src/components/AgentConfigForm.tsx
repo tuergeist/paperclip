@@ -57,6 +57,7 @@ import { getAdapterDisplay, getAdapterLabel } from "../adapters/adapter-display-
 import { useDisabledAdaptersSync } from "../adapters/use-disabled-adapters";
 import { buildAgentUpdatePatch, type AgentConfigOverlay } from "../lib/agent-config-patch";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
+import { filterAcpxModelsByAgent } from "../lib/acpx-model-filter";
 
 /* ---- Create mode values ---- */
 
@@ -360,9 +361,21 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   });
   const [refreshModelsError, setRefreshModelsError] = useState<string | null>(null);
   const [refreshingModels, setRefreshingModels] = useState(false);
-  const models = fetchedModels ?? externalModels ?? [];
+  const rawModels = fetchedModels ?? externalModels ?? [];
   const adapterCommandField =
     adapterType === "hermes_local" ? "hermesCommand" : "command";
+  const acpxAgent =
+    adapterType === "acpx_local"
+      ? isCreate
+        ? String(val!.adapterSchemaValues?.agent ?? "claude")
+        : eff("adapterConfig", "agent", String(config.agent ?? "claude"))
+      : "";
+  const models = useMemo(
+    () => adapterType === "acpx_local"
+      ? filterAcpxModelsByAgent(rawModels, acpxAgent)
+      : rawModels,
+    [adapterType, rawModels, acpxAgent],
+  );
   const {
     data: detectedModelData,
     refetch: refetchDetectedModel,
@@ -376,7 +389,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       }
       return agentsApi.detectModel(selectedCompanyId, adapterType);
     },
-    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "opencode_external"),
+    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "opencode_local"),
   });
   const detectedModel = detectedModelData?.model ?? null;
   const detectedModelCandidates = detectedModelData?.candidates ?? [];
@@ -527,19 +540,23 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const thinkingEffortKey =
     adapterType === "codex_local"
       ? "modelReasoningEffort"
-      : adapterType === "cursor"
-        ? "mode"
-        : adapterType === "opencode_external"
-          ? "variant"
-          : "effort";
+      : adapterType === "acpx_local" && acpxAgent === "codex"
+        ? "modelReasoningEffort"
+        : adapterType === "cursor"
+          ? "mode"
+          : adapterType === "opencode_local"
+            ? "variant"
+            : "effort";
   const thinkingEffortOptions =
     adapterType === "codex_local"
       ? codexThinkingEffortOptions
-      : adapterType === "cursor"
-        ? cursorModeOptions
-        : adapterType === "opencode_external"
-          ? openCodeThinkingEffortOptions
-          : claudeThinkingEffortOptions;
+      : adapterType === "acpx_local" && acpxAgent === "codex"
+        ? codexThinkingEffortOptions
+        : adapterType === "cursor"
+          ? cursorModeOptions
+          : adapterType === "opencode_local"
+            ? openCodeThinkingEffortOptions
+            : claudeThinkingEffortOptions;
   const currentThinkingEffort = isCreate
     ? val!.thinkingEffort
     : adapterType === "codex_local"
@@ -548,11 +565,17 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           "modelReasoningEffort",
           String(config.modelReasoningEffort ?? config.reasoningEffort ?? ""),
         )
-      : adapterType === "cursor"
-        ? eff("adapterConfig", "mode", String(config.mode ?? ""))
-      : adapterType === "opencode_external"
-        ? eff("adapterConfig", "variant", String(config.variant ?? ""))
-      : eff("adapterConfig", "effort", String(config.effort ?? ""));
+      : adapterType === "acpx_local" && acpxAgent === "codex"
+        ? eff(
+            "adapterConfig",
+            "modelReasoningEffort",
+            String(config.modelReasoningEffort ?? config.reasoningEffort ?? config.effort ?? ""),
+          )
+        : adapterType === "cursor"
+          ? eff("adapterConfig", "mode", String(config.mode ?? ""))
+          : adapterType === "opencode_local"
+            ? eff("adapterConfig", "variant", String(config.variant ?? ""))
+            : eff("adapterConfig", "effort", String(config.effort ?? ""));
   const showThinkingEffort = adapterType !== "gemini_local";
   const codexSearchEnabled = adapterType === "codex_local"
     ? (isCreate ? Boolean(val!.search) : eff("adapterConfig", "search", Boolean(config.search)))
@@ -832,7 +855,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
                     } else if (t === "cursor") {
                       nextValues.model = DEFAULT_CURSOR_LOCAL_MODEL;
-                    } else if (t === "opencode_external") {
+                    } else if (t === "opencode_local") {
                       nextValues.model = DEFAULT_OPENCODE_LOCAL_MODEL;
                     }
                     set!(nextValues);
@@ -849,7 +872,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                             ? DEFAULT_CODEX_LOCAL_MODEL
                             : t === "gemini_local"
                               ? DEFAULT_GEMINI_LOCAL_MODEL
-                            : t === "opencode_external"
+                            : t === "opencode_local"
                               ? DEFAULT_OPENCODE_LOCAL_MODEL
                             : t === "cursor"
                               ? DEFAULT_CURSOR_LOCAL_MODEL
@@ -951,7 +974,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       gemini_local: "gemini",
                       pi_local: "pi",
                       cursor: "agent",
-                      opencode_external: "opencode",
+                      opencode_local: "opencode",
                     } as Record<string, string>)[adapterType] ?? adapterType.replace(/_local$/, "")
                   }
                 />
@@ -970,19 +993,23 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 }
                 open={modelOpen}
                 onOpenChange={setModelOpen}
-                allowDefault={adapterType !== "opencode_external"}
-                required={adapterType === "opencode_external"}
-                groupByProvider={adapterType === "opencode_external"}
+                allowDefault={adapterType !== "opencode_local"}
+                required={adapterType === "opencode_local"}
+                groupByProvider={adapterType === "opencode_local"}
                 creatable
                 detectedModel={detectedModel}
                 detectedModelCandidates={[]}
-                onDetectModel={adapterType === "opencode_external"
+                onDetectModel={adapterType === "opencode_local"
                   ? undefined
                   : async () => {
                       const result = await refetchDetectedModel();
                       return result.data?.model ?? null;
                     }}
-                onRefreshModels={adapterType === "codex_local" ? handleRefreshModels : undefined}
+                onRefreshModels={
+                  adapterType === "codex_local" || adapterType === "acpx_local"
+                    ? handleRefreshModels
+                    : undefined
+                }
                 refreshingModels={refreshingModels}
                 detectModelLabel="Detect model"
                 emptyDetectHint="No model detected. Select or enter one manually."
@@ -995,7 +1022,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       : "Failed to load adapter models.")}
                 </p>
               )}
-              {adapterType === "opencode_external"
+              {adapterType === "opencode_local"
                 && currentDefaultEnvironment
                 && currentDefaultEnvironment.driver !== "local" && (
                 <p className="text-xs text-muted-foreground">
@@ -1331,7 +1358,7 @@ function AdapterTypeDropdown({
       <PopoverTrigger asChild>
         <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
           <span className="inline-flex min-w-0 items-center gap-1.5">
-            {value === "opencode_external" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
+            {value === "opencode_local" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
             <span className="truncate">{adapterLabels[value] ?? getAdapterLabel(value)}</span>
             {selectedDisplay.experimental && <ExperimentalBadge />}
           </span>
@@ -1358,7 +1385,7 @@ function AdapterTypeDropdown({
             }}
           >
             <span className="inline-flex items-center gap-1.5">
-              {item.value === "opencode_external" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
+              {item.value === "opencode_local" ? <OpenCodeLogoIcon className="h-3.5 w-3.5" /> : null}
               <span>{item.label}</span>
               {item.experimental && <ExperimentalBadge />}
             </span>
@@ -1743,7 +1770,7 @@ function CheapModelSection({
           onOpenChange={onOpenChange}
           allowDefault
           required={false}
-          groupByProvider={adapterType === "opencode_external"}
+          groupByProvider={adapterType === "opencode_local"}
           creatable
           detectedModel={null}
           detectedModelCandidates={[]}
